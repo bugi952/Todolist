@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>나만의 투두리스트</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --accent: #6c5ce7;
+      --accent-strong: #5b4ad6;
+      --text: #1f2532;
+      --muted: #62708a;
+      --border: #e4e7ef;
+      --shadow: 0 10px 40px rgba(17, 24, 39, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Pretendard Variable", "Inter", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(1200px 800px at 10% 0%, #f3f4ff, #f8fbff 40%, #eef2ff 70%, #f6f8fb);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 32px;
+    }
+
+    main {
+      width: min(1100px, 96vw);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h1 span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(120deg, #7c6ff3, #5f8bff);
+      color: #fff;
+      font-size: 22px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+    }
+
+    form {
+      display: flex;
+      flex: 1 1 340px;
+      gap: 10px;
+      background: #f7f8fd;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 12px 10px 14px;
+    }
+
+    form input[type="text"] {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 16px;
+      color: var(--text);
+      outline: none;
+    }
+
+    form button {
+      border: none;
+      padding: 10px 16px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+      box-shadow: 0 12px 24px rgba(108, 92, 231, 0.3);
+    }
+
+    form button:hover {
+      background: var(--accent-strong);
+      transform: translateY(-1px);
+      box-shadow: 0 14px 26px rgba(108, 92, 231, 0.35);
+    }
+
+    form button:active {
+      transform: translateY(0);
+      box-shadow: 0 10px 18px rgba(108, 92, 231, 0.3);
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .task-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: #fbfcff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 10px 20px rgba(31, 37, 50, 0.04);
+      transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+      cursor: grab;
+    }
+
+    .task-card:active {
+      cursor: grabbing;
+    }
+
+    .task-card.dragging {
+      opacity: 0.75;
+      transform: scale(1.02);
+      border-color: #c8d0ff;
+      box-shadow: 0 16px 26px rgba(92, 113, 255, 0.16);
+    }
+
+    .task-card.drag-over {
+      border-color: var(--accent);
+      box-shadow: 0 16px 30px rgba(92, 113, 255, 0.14);
+    }
+
+    .task-card input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .task-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .task-title {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.4;
+      word-break: keep-all;
+    }
+
+    .task-title.done {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eef2ff;
+      color: #4651c5;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 13px;
+      width: fit-content;
+      border: 1px solid #d6ddff;
+    }
+
+    .delete-btn {
+      border: none;
+      background: transparent;
+      color: #c23b52;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 10px;
+      transition: background-color 120ms ease, color 120ms ease;
+    }
+
+    .delete-btn:hover {
+      background: #ffeef1;
+      color: #a12d42;
+    }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 28px 16px;
+      border: 1px dashed var(--border);
+      border-radius: 14px;
+      background: #f9fbff;
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 18px; }
+      form { flex-basis: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1><span>✏️</span> Todo List</h1>
+        <p class="meta">텍스트를 입력해 할 일을 추가하고, 드래그로 순서를 자유롭게 바꿔보세요.</p>
+      </div>
+      <form id="todo-form" autocomplete="off">
+        <input id="todo-input" type="text" placeholder="할 일을 입력하세요 (Enter)" aria-label="새 할 일" required />
+        <button type="submit">추가</button>
+      </form>
+    </header>
+
+    <section class="grid" id="todo-list" aria-live="polite">
+      <div class="empty" id="empty-state">아직 등록된 할 일이 없어요. 첫 번째 아이템을 추가해보세요!</div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('todo-form');
+    const input = document.getElementById('todo-input');
+    const list = document.getElementById('todo-list');
+    const emptyState = document.getElementById('empty-state');
+
+    let tasks = [];
+    let draggingId = null;
+
+    function createId() {
+      return crypto.randomUUID ? crypto.randomUUID() : `todo-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function renderTasks() {
+      list.innerHTML = '';
+
+      if (tasks.length === 0) {
+        list.append(emptyState);
+        return;
+      }
+
+      tasks.forEach((task) => {
+        const card = document.createElement('article');
+        card.className = 'task-card';
+        card.draggable = true;
+        card.dataset.id = task.id;
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = task.done;
+        checkbox.addEventListener('change', () => toggleDone(task.id, checkbox.checked));
+
+        const content = document.createElement('div');
+        content.className = 'task-content';
+
+        const title = document.createElement('p');
+        title.textContent = task.text;
+        title.className = `task-title${task.done ? ' done' : ''}`;
+
+        const badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.textContent = task.done ? '완료됨' : '진행 중';
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.textContent = '삭제';
+        deleteBtn.setAttribute('aria-label', `${task.text} 삭제`);
+        deleteBtn.addEventListener('click', () => deleteTask(task.id));
+
+        content.append(title, badge);
+        card.append(checkbox, content, deleteBtn);
+
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragover', handleDragOver);
+        card.addEventListener('dragleave', handleDragLeave);
+        card.addEventListener('drop', handleDrop);
+        card.addEventListener('dragend', handleDragEnd);
+
+        list.append(card);
+      });
+    }
+
+    function toggleDone(id, done) {
+      tasks = tasks.map((task) => task.id === id ? { ...task, done } : task);
+      renderTasks();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter((task) => task.id !== id);
+      renderTasks();
+    }
+
+    function handleDragStart(event) {
+      draggingId = event.currentTarget.dataset.id;
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', draggingId);
+      event.currentTarget.classList.add('dragging');
+    }
+
+    function handleDragOver(event) {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+      event.currentTarget.classList.add('drag-over');
+    }
+
+    function handleDragLeave(event) {
+      event.currentTarget.classList.remove('drag-over');
+    }
+
+    function handleDrop(event) {
+      event.preventDefault();
+      const targetId = event.currentTarget.dataset.id;
+      const sourceId = event.dataTransfer.getData('text/plain') || draggingId;
+
+      if (!sourceId || sourceId === targetId) return;
+
+      const fromIndex = tasks.findIndex((task) => task.id === sourceId);
+      const toIndex = tasks.findIndex((task) => task.id === targetId);
+
+      if (fromIndex === -1 || toIndex === -1) return;
+
+      const [moved] = tasks.splice(fromIndex, 1);
+      tasks.splice(toIndex, 0, moved);
+      renderTasks();
+    }
+
+    function handleDragEnd(event) {
+      event.currentTarget.classList.remove('dragging', 'drag-over');
+      draggingId = null;
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+
+      tasks.push({ id: createId(), text, done: false });
+      input.value = '';
+      renderTasks();
+      input.focus();
+    });
+
+    // 초기 상태 렌더링
+    renderTasks();
+  </script>
+</body>
+</html>
